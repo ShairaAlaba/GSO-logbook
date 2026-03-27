@@ -37,14 +37,38 @@ export const useLogbookStore = defineStore('logbook', {
     updateReservationRecord(index, record) {
       this.reservationRecords[index] = record
     },
+    deleteReservationRecord(index) {
+      this.reservationRecords.splice(index, 1)
+    },
+
     addInspectionRecord(record) {
       this.inspectionRecords.push(record)
     },
+    updateInspectionRecord(index, record) {
+      this.inspectionRecords[index] = record
+    },
+    deleteInspectionRecord(index) {
+      this.inspectionRecords.splice(index, 1)
+    },
+
     addPowRecord(record) {
       this.powRecords.push(record)
     },
+    updatePowRecord(index, record) {
+      this.powRecords[index] = record
+    },
+    deletePowRecord(index) {
+      this.powRecords.splice(index, 1)
+    },
+
     addFuelRecord(record) {
       this.fuelRecords.push(record)
+    },
+    updateFuelRecord(index, record) {
+      this.fuelRecords[index] = record
+    },
+    deleteFuelRecord(index) {
+      this.fuelRecords.splice(index, 1)
     },
   }
 })
@@ -53,8 +77,6 @@ function initReservationRecords() {
   const vehicles = Object.keys(seedData.reservation.vehicles)
   const headers = seedData.reservation.headers
 
-  // Group by year/month from the data
-  // Create one combined record per vehicle representing 2026 data
   const vehicleRecords = vehicles.map(vehicle => {
     const rows = seedData.reservation.vehicles[vehicle]
     return {

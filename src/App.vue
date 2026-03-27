@@ -24,8 +24,8 @@
           <span class="nav-item-label">Dashboard</span>
         </router-link>
 
-        <!-- Section Label -->
-        <div class="nav-section-label">Logbook Modules</div>
+        <!-- ── SECTION: Vehicle Records ── -->
+        <div class="nav-section-label">Vehicle Records</div>
 
         <!-- Reservation -->
         <div class="nav-group">
@@ -85,37 +85,6 @@
           </div>
         </div>
 
-        <!-- POW Monitoring -->
-        <div class="nav-group">
-          <button
-            class="nav-group-header"
-            :class="{ 'active-group': isGroupActive('pow'), 'open': openGroups.pow }"
-            @click="toggleGroup('pow')"
-          >
-            <span class="nav-item-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
-            </span>
-            <span class="nav-item-label">POW Monitoring</span>
-            <span class="nav-chevron" :class="{ rotated: openGroups.pow }">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12"><polyline points="6,9 12,15 18,9"/></svg>
-            </span>
-          </button>
-          <div class="nav-sub" :class="{ open: openGroups.pow }">
-            <router-link to="/pow/all" class="nav-sub-item" active-class="active">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-              All Files Record
-            </router-link>
-            <router-link to="/pow/create" class="nav-sub-item" active-class="active">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-              Create New Record
-            </router-link>
-            <router-link to="/pow/analysis" class="nav-sub-item" active-class="active">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg>
-              POW Analysis
-            </router-link>
-          </div>
-        </div>
-
         <!-- Fuel & Oil -->
         <div class="nav-group">
           <button
@@ -139,6 +108,43 @@
             <router-link to="/fuel/create" class="nav-sub-item" active-class="active">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
               Create New Record
+            </router-link>
+          </div>
+        </div>
+
+        <!-- ── DIVIDER ── -->
+        <div class="nav-section-divider"></div>
+
+        <!-- ── SECTION: POW Monitoring ── -->
+        <div class="nav-section-label">POW Monitoring</div>
+
+        <!-- POW Monitoring -->
+        <div class="nav-group">
+          <button
+            class="nav-group-header"
+            :class="{ 'active-group': isGroupActive('pow'), 'open': openGroups.pow }"
+            @click="toggleGroup('pow')"
+          >
+            <span class="nav-item-icon nav-item-icon--pow">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+            </span>
+            <span class="nav-item-label">POW Monitoring</span>
+            <span class="nav-chevron" :class="{ rotated: openGroups.pow }">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12"><polyline points="6,9 12,15 18,9"/></svg>
+            </span>
+          </button>
+          <div class="nav-sub" :class="{ open: openGroups.pow }">
+            <router-link to="/pow/all" class="nav-sub-item" active-class="active">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+              All Files Record
+            </router-link>
+            <router-link to="/pow/create" class="nav-sub-item" active-class="active">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+              Create New Record
+            </router-link>
+            <router-link to="/pow/analysis" class="nav-sub-item" active-class="active">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg>
+              POW Analysis
             </router-link>
           </div>
         </div>
@@ -189,9 +195,9 @@ function isGroupActive(group) {
 
 watch(() => route.path, (path) => {
   if (path.startsWith('/reservation')) openGroups.reservation = true
-  if (path.startsWith('/inspection')) openGroups.inspection = true
-  if (path.startsWith('/pow')) openGroups.pow = true
-  if (path.startsWith('/fuel')) openGroups.fuel = true
+  if (path.startsWith('/inspection'))  openGroups.inspection  = true
+  if (path.startsWith('/pow'))         openGroups.pow         = true
+  if (path.startsWith('/fuel'))        openGroups.fuel        = true
 }, { immediate: true })
 </script>
 
@@ -241,7 +247,7 @@ watch(() => route.path, (path) => {
 }
 .logo-sub {
   font-size: 10px;
-  color: rgba(0, 0, 0, 0.5);
+  color: rgba(0,0,0,0.5);
   margin-top: 3px;
   letter-spacing: 0.3px;
 }
@@ -255,10 +261,16 @@ watch(() => route.path, (path) => {
 .nav-section-label {
   font-size: 9px;
   font-weight: 700;
-  color: rgba(0, 0, 0, 0.38);
+  color: rgba(0,0,0,0.38);
   text-transform: uppercase;
   letter-spacing: 2px;
   padding: 14px 18px 5px;
+}
+
+/* ── Section divider between Vehicle Records and POW ── */
+.nav-section-divider {
+  margin: 10px 14px 0;
+  border-top: 1px dashed rgba(0,0,0,0.18);
 }
 
 /* ── Home link ── */
@@ -268,7 +280,7 @@ watch(() => route.path, (path) => {
   gap: 10px;
   padding: 9px 10px;
   margin: 4px 10px;
-  color: rgb(0, 0, 0);
+  color: rgb(0,0,0);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -284,17 +296,13 @@ watch(() => route.path, (path) => {
 .nav-home-link.router-link-active {
   background: rgba(255,255,255,0.18);
   color: #000000;
-  border-left-color: rgba(0, 0, 0, 0.65);
+  border-left-color: rgba(0,0,0,0.65);
 }
-.nav-home-link.router-link-active .nav-item-icon {
-  background: rgba(255,255,255,0.22);
-}
+.nav-home-link.router-link-active .nav-item-icon { background: rgba(255,255,255,0.22); }
 .nav-home-link.router-link-active .nav-item-icon svg { stroke: #000000; }
 
 /* ── Nav group ── */
-.nav-group {
-  margin: 2px 10px;
-}
+.nav-group { margin: 2px 10px; }
 
 .nav-group-header {
   display: flex;
@@ -306,7 +314,7 @@ watch(() => route.path, (path) => {
   border: none;
   border-left: 3px solid transparent;
   border-radius: 8px;
-  color: rgb(0, 0, 0);
+  color: rgb(0,0,0);
   font-size: 12.5px;
   font-weight: 600;
   cursor: pointer;
@@ -322,9 +330,7 @@ watch(() => route.path, (path) => {
   border-left-color: rgba(255,255,255,0.6);
   color: #000000;
 }
-.nav-group-header.active-group .nav-item-icon {
-  background: rgba(255,255,255,0.22);
-}
+.nav-group-header.active-group .nav-item-icon { background: rgba(255,255,255,0.22); }
 .nav-group-header.active-group .nav-item-icon svg { stroke: #000000; }
 
 /* ── Nav item icons ── */
@@ -341,12 +347,14 @@ watch(() => route.path, (path) => {
 }
 .nav-item-icon svg {
   display: block;
-  stroke: rgba(0, 0, 0, 0.8);
+  stroke: rgba(0,0,0,0.8);
   transition: stroke 0.2s;
 }
-.nav-group-header:hover .nav-item-icon {
-  background: rgba(0, 0, 0, 0.16);
-}
+
+/* POW icon gets a subtle amber tint to hint it's different */
+.nav-item-icon--pow { background: rgba(255, 210, 100, 0.25); }
+
+.nav-group-header:hover .nav-item-icon { background: rgba(0,0,0,0.16); }
 .nav-group-header:hover .nav-item-icon svg { stroke: #000000; }
 
 .nav-item-label { flex: 1; line-height: 1.3; }
@@ -359,7 +367,7 @@ watch(() => route.path, (path) => {
   opacity: 0.55;
   flex-shrink: 0;
 }
-.nav-chevron svg { stroke: rgba(0, 0, 0, 0.8); }
+.nav-chevron svg { stroke: rgba(0,0,0,0.8); }
 .nav-chevron.rotated { transform: rotate(180deg); }
 
 /* ── Submenu ── */
@@ -375,7 +383,7 @@ watch(() => route.path, (path) => {
   align-items: center;
   gap: 8px;
   padding: 7px 10px 7px 46px;
-  color: rgba(0, 0, 0, 0.6);
+  color: rgba(0,0,0,0.6);
   font-size: 12px;
   cursor: pointer;
   transition: all 0.18s;
@@ -385,18 +393,18 @@ watch(() => route.path, (path) => {
 }
 .nav-sub-item svg {
   flex-shrink: 0;
-  stroke: rgba(0, 0, 0, 0.45);
+  stroke: rgba(0,0,0,0.45);
   transition: stroke 0.18s;
 }
 .nav-sub-item:hover {
   color: #000000;
   background: rgba(255,255,255,0.1);
 }
-.nav-sub-item:hover svg { stroke: rgba(0, 0, 0, 0.9); }
+.nav-sub-item:hover svg { stroke: rgba(0,0,0,0.9); }
 .nav-sub-item.router-link-active,
 .nav-sub-item.active {
   color: #000000;
-  background: rgba(0, 0, 0, 0.17);
+  background: rgba(0,0,0,0.17);
   font-weight: 600;
 }
 .nav-sub-item.router-link-active svg,
@@ -411,10 +419,7 @@ watch(() => route.path, (path) => {
   border-top: 1px solid rgba(255,255,255,0.1);
   background: rgba(0,0,0,0.12);
 }
-.sidebar-footer-icon {
-  opacity: 0.3;
-  flex-shrink: 0;
-}
+.sidebar-footer-icon { opacity: 0.3; flex-shrink: 0; }
 .sidebar-footer-icon svg { stroke: #000000; display: block; }
 .sidebar-footer-text { display: flex; flex-direction: column; gap: 2px; }
 .footer-office {
@@ -424,10 +429,7 @@ watch(() => route.path, (path) => {
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
-.footer-address {
-  font-size: 10px;
-  color: rgba(255,255,255,0.28);
-}
+.footer-address { font-size: 10px; color: rgba(255,255,255,0.28); }
 
 /* ── Main Content ── */
 .main-content {

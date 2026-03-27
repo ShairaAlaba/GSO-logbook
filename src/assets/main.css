@@ -32,67 +32,19 @@ body {
   font-size: 14px;
 }
 
-/* ── Global Scrollbar (vertical) ── */
-::-webkit-scrollbar { width: 10px; height: 10px; }
-::-webkit-scrollbar-track { background: var(--gray-200); border-radius: 6px; }
+/* ── Scrollbar — thick & easy to click ── */
+::-webkit-scrollbar { width: 14px; height: 14px; }
+::-webkit-scrollbar-track { background: var(--gray-200); border-radius: 8px; }
 ::-webkit-scrollbar-thumb {
-  background: var(--green-400);
-  border-radius: 6px;
-  border: 2px solid var(--gray-200);
-}
-::-webkit-scrollbar-thumb:hover { background: var(--green-500); }
-::-webkit-scrollbar-thumb:active { background: var(--green-dark); }
-
-/* ── Table horizontal scrollbar — pinned at TOP via CSS rotateX trick ──
-   Rotates the scroll container 180deg so the scrollbar appears at the
-   top, then rotates inner content back so it reads normally ── */
-.table-container,
-.record-card-body,
-.detail-table-wrap,
-.vol-chart-wrap {
-  transform: rotateX(180deg);
-  -webkit-transform: rotateX(180deg);
-}
-.table-container > *,
-.record-card-body > *,
-.detail-table-wrap > *,
-.vol-chart-wrap > * {
-  transform: rotateX(180deg);
-  -webkit-transform: rotateX(180deg);
-}
-
-/* Thick, easy-to-click horizontal scrollbar for all table containers */
-.table-container::-webkit-scrollbar,
-.record-card-body::-webkit-scrollbar,
-.detail-table-wrap::-webkit-scrollbar,
-.vol-chart-wrap::-webkit-scrollbar { height: 14px; }
-
-.table-container::-webkit-scrollbar-track,
-.record-card-body::-webkit-scrollbar-track,
-.detail-table-wrap::-webkit-scrollbar-track,
-.vol-chart-wrap::-webkit-scrollbar-track {
-  background: var(--gray-200);
-  border-radius: 8px;
-  margin: 0 4px;
-}
-.table-container::-webkit-scrollbar-thumb,
-.record-card-body::-webkit-scrollbar-thumb,
-.detail-table-wrap::-webkit-scrollbar-thumb,
-.vol-chart-wrap::-webkit-scrollbar-thumb {
   background: var(--green-400);
   border-radius: 8px;
   border: 3px solid var(--gray-200);
-  min-width: 60px;
+  min-height: 48px;
+  min-width: 48px;
 }
-.table-container::-webkit-scrollbar-thumb:hover,
-.record-card-body::-webkit-scrollbar-thumb:hover,
-.detail-table-wrap::-webkit-scrollbar-thumb:hover,
-.vol-chart-wrap::-webkit-scrollbar-thumb:hover { background: var(--green-500); }
-
-.table-container::-webkit-scrollbar-thumb:active,
-.record-card-body::-webkit-scrollbar-thumb:active,
-.detail-table-wrap::-webkit-scrollbar-thumb:active,
-.vol-chart-wrap::-webkit-scrollbar-thumb:active { background: var(--green-dark); }
+::-webkit-scrollbar-thumb:hover { background: var(--green-500); }
+::-webkit-scrollbar-thumb:active { background: var(--green-dark); }
+::-webkit-scrollbar-corner { background: var(--gray-200); }
 
 /* App Layout */
 .app-layout {

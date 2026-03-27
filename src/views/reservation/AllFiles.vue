@@ -52,7 +52,40 @@
             </div>
           </div>
           <div class="record-card-actions no-print">
+            <!-- Edit / Save button -->
+            <button
+              v-if="!editingId[rec.id]"
+              class="btn btn-warning btn-sm"
+              @click.stop="startEdit(rec)"
+            >
+               Edit
+            </button>
+            <button
+              v-else
+              class="btn btn-success btn-sm"
+              @click.stop="saveEdit(rec)"
+            >
+               Save
+            </button>
+            <button
+              v-if="editingId[rec.id]"
+              class="btn btn-secondary btn-sm"
+              @click.stop="cancelEdit(rec)"
+            >
+              Cancel
+            </button>
+
+            <!-- Delete -->
+            <button
+              v-if="!editingId[rec.id]"
+              class="btn btn-danger btn-sm"
+              @click.stop="confirmDelete(rec)"
+            > Delete</button>
+
+            <!-- Print -->
             <button class="btn btn-success btn-sm" @click.stop="printRecord(rec.id)">Print</button>
+
+            <!-- Expand/Collapse -->
             <button class="btn btn-secondary btn-sm" @click.stop="toggleRecord(rec.id)">
               {{ openRecords[rec.id] ? '▲ Collapse' : '▼ Expand' }}
             </button>
@@ -62,9 +95,14 @@
         <div class="record-card-body" :class="{ open: openRecords[rec.id] }">
           <ExcelTable
             :headers="rec.headers"
-            :model-value="rec.rows"
-            :editable="false"
+            :model-value="editingId[rec.id] ? draftRows[rec.id] : rec.rows"
+            :editable="!!editingId[rec.id]"
+            @update:model-value="val => draftRows[rec.id] = val"
           />
+          <!-- Edit mode notice -->
+          <div v-if="editingId[rec.id]" class="edit-notice no-print">
+             Editing mode — make your changes then click <strong>Save</strong>. Changes won't be applied until saved.
+          </div>
         </div>
 
         <!-- Signature Block (only shows when printing) -->
@@ -81,10 +119,29 @@
           </div>
         </div>
       </div>
-    </div>
-  </div>
-</template>
+    </div><!-- /page-content -->
 
+  <!-- ── Delete Confirmation Modal ── -->
+  <Teleport to="body">
+    <div v-if="deleteTarget" class="modal-backdrop" @click.self="deleteTarget = null">
+      <div class="modal-box">
+        <div class="modal-icon"></div>
+        <div class="modal-title">Delete Record?</div>
+        <div class="modal-body">
+          You are about to permanently delete:<br>
+          <strong>{{ deleteTarget.title }}</strong><br><br>
+          This cannot be undone.
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-secondary btn-sm" @click="deleteTarget = null">Cancel</button>
+          <button class="btn btn-danger btn-sm" @click="doDelete">Yes, Delete</button>
+        </div>
+      </div>
+    </div>
+  </Teleport>
+
+</div>
+</template>
 <script setup>
 import { ref, computed, reactive } from 'vue'
 import { useLogbookStore } from '../../store/logbook.js'
@@ -97,20 +154,22 @@ const filterYear = ref('')
 const filterMonth = ref('')
 const filterVehicle = ref('')
 const openRecords = reactive({})
-const printingId = ref(null)
+const editingId  = reactive({})
+const draftRows  = reactive({})
+const deleteTarget = ref(null)
 
-const years = computed(() => [...new Set(store.reservationRecords.map(r => r.year))].sort())
-const months = ['January','February','March','April','May','June','July','August','September','October','November','December']
+const years    = computed(() => [...new Set(store.reservationRecords.map(r => r.year))].sort())
+const months   = ['January','February','March','April','May','June','July','August','September','October','November','December']
 const vehicles = computed(() => [...new Set(store.reservationRecords.map(r => r.vehicle))].sort())
 
 const filteredRecords = computed(() => {
   return store.reservationRecords.filter(rec => {
     const s = search.value.toLowerCase()
-    const matchSearch = !s || 
+    const matchSearch = !s ||
       rec.title.toLowerCase().includes(s) ||
       rec.vehicle.toLowerCase().includes(s) ||
       rec.rows.some(row => row.some(cell => cell.toLowerCase().includes(s)))
-    const matchYear = !filterYear.value || rec.year === filterYear.value
+    const matchYear    = !filterYear.value    || rec.year    === filterYear.value
     const matchVehicle = !filterVehicle.value || rec.vehicle === filterVehicle.value
     return matchSearch && matchYear && matchVehicle && rec.rows.length > 0
   })
@@ -120,9 +179,92 @@ function toggleRecord(id) {
   openRecords[id] = !openRecords[id]
 }
 
+function startEdit(rec) {
+  // Deep-clone rows so edits don't touch the store directly
+  draftRows[rec.id]  = rec.rows.map(r => [...r])
+  editingId[rec.id]  = true
+  openRecords[rec.id] = true   // auto-expand so they can see the table
+}
+
+function saveEdit(rec) {
+  // Find the real index in the store and update it
+  const idx = store.reservationRecords.findIndex(r => r.id === rec.id)
+  if (idx !== -1) store.updateReservationRecord(idx, { ...store.reservationRecords[idx], rows: draftRows[rec.id] })
+  editingId[rec.id] = false
+}
+
+function cancelEdit(rec) {
+  delete draftRows[rec.id]
+  editingId[rec.id] = false
+}
+
+function confirmDelete(rec) { deleteTarget.value = rec }
+function doDelete() {
+  const idx = store.reservationRecords.findIndex(r => r.id === deleteTarget.value.id)
+  if (idx !== -1) store.deleteReservationRecord(idx)
+  deleteTarget.value = null
+}
+
 function printRecord(id) {
-  // Open record before printing
   openRecords[id] = true
   setTimeout(() => window.print(), 300)
 }
 </script>
+
+<style scoped>
+.edit-notice {
+  margin-top: 8px;
+  padding: 8px 14px;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 6px;
+  font-size: 12px;
+  color: #92400e;
+}
+
+/* Warning / amber button for Edit */
+.btn-warning {
+  background: #9dc5a7;
+  color: #000;
+  border: 1.5px solid #a4cfb2;
+}
+.btn-warning:hover {
+  background: #82a381;
+  border-color: #9fc49b;
+}
+
+/* Delete confirm modal */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+.modal-box {
+  background: #fff;
+  border-radius: 12px;
+  padding: 32px 28px 24px;
+  max-width: 380px;
+  width: 90%;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.22);
+  text-align: center;
+}
+.modal-icon { font-size: 36px; margin-bottom: 10px; }
+.modal-title { font-size: 17px; font-weight: 700; color: #111827; margin-bottom: 10px; }
+.modal-body { font-size: 13px; color: #4b5563; line-height: 1.6; margin-bottom: 22px; }
+.modal-actions { display: flex; gap: 10px; justify-content: center; }
+
+/* Danger button */
+.btn-danger {
+  background: #ef4444;
+  color: #fff;
+  border: 1.5px solid #dc2626;
+}
+.btn-danger:hover {
+  background: #dc2626;
+  border-color: #b91c1c;
+}
+</style>
