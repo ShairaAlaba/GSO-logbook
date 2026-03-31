@@ -14,6 +14,9 @@ export const useLogbookStore = defineStore('logbook', {
     
     // Fuel & Oil records
     fuelRecords: initFuelRecords(),
+
+    // POW Pre/Post Inspection records
+    powInspectionRecords: [],
   }),
 
   getters: {
@@ -69,6 +72,16 @@ export const useLogbookStore = defineStore('logbook', {
     },
     deleteFuelRecord(index) {
       this.fuelRecords.splice(index, 1)
+    },
+
+    addPowInspectionRecord(record) {
+      this.powInspectionRecords.push(record)
+    },
+    updatePowInspectionRecord(index, record) {
+      this.powInspectionRecords[index] = record
+    },
+    deletePowInspectionRecord(index) {
+      this.powInspectionRecords.splice(index, 1)
     },
   }
 })

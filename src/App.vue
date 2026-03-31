@@ -58,7 +58,7 @@
           </div>
         </div>
 
-        <!-- Pre/Post Inspection -->
+        <!-- Pre/Post Inspection (Vehicle) -->
         <div class="nav-group">
           <button
             class="nav-group-header"
@@ -149,6 +149,33 @@
           </div>
         </div>
 
+        <!-- POW Pre/Post Inspection -->
+        <div class="nav-group">
+          <button
+            class="nav-group-header"
+            :class="{ 'active-group': isGroupActive('pow-inspection'), 'open': openGroups.powInspection }"
+            @click="toggleGroup('powInspection')"
+          >
+            <span class="nav-item-icon nav-item-icon--pow">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+            </span>
+            <span class="nav-item-label">Pre / Post Inspection</span>
+            <span class="nav-chevron" :class="{ rotated: openGroups.powInspection }">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12"><polyline points="6,9 12,15 18,9"/></svg>
+            </span>
+          </button>
+          <div class="nav-sub" :class="{ open: openGroups.powInspection }">
+            <router-link to="/pow-inspection/all" class="nav-sub-item" active-class="active">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+              All Files Record
+            </router-link>
+            <router-link to="/pow-inspection/create" class="nav-sub-item" active-class="active">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+              Create New Record
+            </router-link>
+          </div>
+        </div>
+
       </nav>
 
       <!-- Sidebar Footer -->
@@ -182,7 +209,8 @@ const openGroups = reactive({
   reservation: false,
   inspection: false,
   pow: false,
-  fuel: false
+  fuel: false,
+  powInspection: false
 })
 
 function toggleGroup(group) {
@@ -194,10 +222,11 @@ function isGroupActive(group) {
 }
 
 watch(() => route.path, (path) => {
-  if (path.startsWith('/reservation')) openGroups.reservation = true
-  if (path.startsWith('/inspection'))  openGroups.inspection  = true
-  if (path.startsWith('/pow'))         openGroups.pow         = true
-  if (path.startsWith('/fuel'))        openGroups.fuel        = true
+  if (path.startsWith('/reservation'))    openGroups.reservation    = true
+  if (path.startsWith('/inspection'))     openGroups.inspection     = true
+  if (path.startsWith('/pow-inspection')) openGroups.powInspection  = true
+  if (path.startsWith('/pow'))            openGroups.pow            = true
+  if (path.startsWith('/fuel'))           openGroups.fuel           = true
 }, { immediate: true })
 </script>
 
@@ -211,14 +240,13 @@ watch(() => route.path, (path) => {
 
 /* ── Sidebar ── */
 .sidebar {
-  width: 260px;
-  background: linear-gradient(175deg, #a2c09e 0%, #81a57d 100%);
+  width: 220px;
+  min-width: 220px;
+  background: linear-gradient(160deg, #e8f5e9 0%, #c8e6c9 100%);
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  flex-shrink: 0;
-  box-shadow: 4px 0 20px rgba(0,0,0,0.2);
-  z-index: 100;
+  box-shadow: 2px 0 12px rgba(0,0,0,0.08);
 }
 
 /* ── Logo ── */
@@ -226,7 +254,7 @@ watch(() => route.path, (path) => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 22px 16px 16px;
+  padding: 18px 16px 14px;
   border-bottom: 1px solid rgba(255,255,255,0.1);
   background: rgba(0,0,0,0.1);
 }

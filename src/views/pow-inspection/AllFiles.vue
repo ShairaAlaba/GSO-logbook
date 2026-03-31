@@ -1,11 +1,11 @@
-﻿<template>
+<template>
   <div>
     <div class="page-header no-print">
       <div>
-        <h1>Pre / Post Inspection — All Files Record</h1>
-        <div class="breadcrumb">Analysis → Pre / Post Inspection → All Files</div>
+        <h1>POW Pre / Post Inspection — All Files Record</h1>
+        <div class="breadcrumb">POW Monitoring → Pre / Post Inspection → All Files</div>
       </div>
-      <router-link to="/inspection/create" class="btn btn-primary">+ Create New Record</router-link>
+      <router-link to="/pow-inspection/create" class="btn btn-primary">+ Create New Record</router-link>
     </div>
     <div class="page-content">
       <div class="filter-bar no-print">
@@ -27,7 +27,7 @@
       </div>
       <div v-for="(rec, ri) in filteredRecords" :key="rec.id" class="record-card">
         <PrintHeader
-          :title="`${rec.type === 'pre' ? 'Pre' : 'Post'}-Inspection Log Book`"
+          :title="`POW ${rec.type === 'pre' ? 'Pre' : 'Post'}-Inspection Log Book`"
           :subtitle="`General Services Office | Caraga State University`"
           :meta="`Record: ${rec.title} | Date: ${rec.date} | Recorded by: ${rec.recordedBy}`"
         />
@@ -114,10 +114,10 @@ const editingId    = reactive({})
 const draftRows    = reactive({})
 const deleteTarget = ref(null)
 
-const years = computed(() => [...new Set(store.inspectionRecords.map(r => r.year))].sort())
+const years = computed(() => [...new Set(store.powInspectionRecords.map(r => r.year))].sort())
 
 const filteredRecords = computed(() => {
-  return store.inspectionRecords.filter(rec => {
+  return store.powInspectionRecords.filter(rec => {
     const s = search.value.toLowerCase()
     const matchSearch = !s || rec.title.toLowerCase().includes(s) ||
       rec.rows.some(row => row.some(cell => String(cell).toLowerCase().includes(s)))
@@ -134,8 +134,8 @@ function startEdit(rec) {
   openRecords[rec.id] = true
 }
 function saveEdit(rec) {
-  const idx = store.inspectionRecords.findIndex(r => r.id === rec.id)
-  if (idx !== -1) store.updateInspectionRecord(idx, { ...store.inspectionRecords[idx], rows: draftRows[rec.id] })
+  const idx = store.powInspectionRecords.findIndex(r => r.id === rec.id)
+  if (idx !== -1) store.updatePowInspectionRecord(idx, { ...store.powInspectionRecords[idx], rows: draftRows[rec.id] })
   editingId[rec.id] = false
 }
 function cancelEdit(rec) {
@@ -144,8 +144,8 @@ function cancelEdit(rec) {
 }
 function confirmDelete(rec) { deleteTarget.value = rec }
 function doDelete() {
-  const idx = store.inspectionRecords.findIndex(r => r.id === deleteTarget.value.id)
-  if (idx !== -1) store.deleteInspectionRecord(idx)
+  const idx = store.powInspectionRecords.findIndex(r => r.id === deleteTarget.value.id)
+  if (idx !== -1) store.deletePowInspectionRecord(idx)
   deleteTarget.value = null
 }
 function printRecord(id) {

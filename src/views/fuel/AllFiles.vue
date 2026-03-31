@@ -29,7 +29,7 @@
         </div>
       </div>
 
-      <div v-for="(rec, ri) in filteredRecords" :key="rec.id" class="record-card">
+      <div v-for="(rec) in filteredRecords" :key="rec.id" class="record-card">
         <PrintHeader
           :title="`Fuel &amp; Oil Withdrawal Log — ${rec.month} ${rec.year}`"
           :subtitle="`General Services Office | Caraga State University`"
@@ -51,24 +51,22 @@
               v-if="!editingId[rec.id]"
               class="btn btn-warning btn-sm"
               @click.stop="startEdit(rec)"
-            > Edit</button>
+            >Edit</button>
             <button
               v-else
               class="btn btn-success btn-sm"
               @click.stop="saveEdit(rec)"
-            > Save</button>
+            >Save</button>
             <button
               v-if="editingId[rec.id]"
               class="btn btn-secondary btn-sm"
               @click.stop="cancelEdit(rec)"
             >Cancel</button>
-
             <button
               v-if="!editingId[rec.id]"
               class="btn btn-danger btn-sm"
               @click.stop="confirmDelete(rec)"
-            > Delete</button>
-
+            >Delete</button>
             <button class="btn btn-success btn-sm" @click.stop="printRecord(rec.id)">Print</button>
             <button class="btn btn-secondary btn-sm" @click.stop="toggleRecord(rec.id)">
               {{ openRecords[rec.id] ? '▲ Collapse' : '▼ Expand' }}
@@ -84,7 +82,7 @@
             @update:model-value="val => draftRows[rec.id] = val"
           />
           <div v-if="editingId[rec.id]" class="edit-notice no-print">
-             Editing mode — make your changes then click <strong>Save</strong>.
+            Editing mode — make your changes then click <strong>Save</strong>.
           </div>
         </div>
 
@@ -101,41 +99,42 @@
           </div>
         </div>
       </div>
-    </div><!-- /page-content -->
+    </div>
 
-  <Teleport to="body">
-    <div v-if="deleteTarget" class="modal-backdrop" @click.self="deleteTarget = null">
-      <div class="modal-box">
-        <div class="modal-icon"></div>
-        <div class="modal-title">Delete Record?</div>
-        <div class="modal-body">
-          You are about to permanently delete:<br>
-          <strong>{{ deleteTarget.title }}</strong><br><br>
-          This cannot be undone.
-        </div>
-        <div class="modal-actions">
-          <button class="btn btn-secondary btn-sm" @click="deleteTarget = null">Cancel</button>
-          <button class="btn btn-danger btn-sm" @click="doDelete">Yes, Delete</button>
+    <Teleport to="body">
+      <div v-if="deleteTarget" class="modal-backdrop" @click.self="deleteTarget = null">
+        <div class="modal-box">
+          <div class="modal-icon">⚠️</div>
+          <div class="modal-title">Delete Record?</div>
+          <div class="modal-body">
+            You are about to permanently delete:<br>
+            <strong>{{ deleteTarget.title }}</strong><br><br>
+            This cannot be undone.
+          </div>
+          <div class="modal-actions">
+            <button class="btn btn-secondary btn-sm" @click="deleteTarget = null">Cancel</button>
+            <button class="btn btn-danger btn-sm" @click="doDelete">Yes, Delete</button>
+          </div>
         </div>
       </div>
-    </div>
-  </Teleport>
+    </Teleport>
 
-</div>
+  </div>
 </template>
+
 <script setup>
 import { ref, computed, reactive } from 'vue'
 import { useLogbookStore } from '../../store/logbook.js'
 import ExcelTable from '../../components/ExcelTable.vue'
 import PrintHeader from '../../components/PrintHeader.vue'
 
-const store = useLogbookStore()
-const search      = ref('')
-const filterYear  = ref('')
-const filterMonth = ref('')
-const openRecords = reactive({})
-const editingId   = reactive({})
-const draftRows   = reactive({})
+const store        = useLogbookStore()
+const search       = ref('')
+const filterYear   = ref('')
+const filterMonth  = ref('')
+const openRecords  = reactive({})
+const editingId    = reactive({})
+const draftRows    = reactive({})
 const deleteTarget = ref(null)
 
 const years     = computed(() => [...new Set(store.fuelRecords.map(r => r.year))].sort())
@@ -144,11 +143,13 @@ const monthList = computed(() => [...new Set(store.fuelRecords.map(r => r.month)
 const filteredRecords = computed(() => {
   return store.fuelRecords.filter(rec => {
     const s = search.value.toLowerCase()
-    const matchSearch = !s || rec.title.toLowerCase().includes(s) ||
-      rec.rows.some(row => row.some(cell => String(cell).toLowerCase().includes(s)))
+    const matchSearch = !s
+      || rec.title.toLowerCase().includes(s)
+      || rec.rows.some(row => row.some(cell => String(cell).toLowerCase().includes(s)))
     const matchYear  = !filterYear.value  || rec.year  === filterYear.value
     const matchMonth = !filterMonth.value || rec.month === filterMonth.value
-    return matchSearch && matchYear && matchMonth && rec.rows.length > 0
+    // ← removed rec.rows.length > 0 so newly created empty records still appear
+    return matchSearch && matchYear && matchMonth
   })
 })
 

@@ -18,7 +18,10 @@
               <input
                 v-if="editable"
                 :value="cell"
+                :data-row="ri"
+                :data-col="ci"
                 @input="updateCell(ri, ci, $event.target.value)"
+                @keydown.enter.prevent="focusNext(ri, ci)"
                 :placeholder="headers[ci]"
               />
               <span v-else :title="cell">{{ cell }}</span>
@@ -67,7 +70,6 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue'])
 
-// ── Scroll sync refs ──
 const bottomBar      = ref(null)
 const tableContainer = ref(null)
 const tableEl        = ref(null)
@@ -114,7 +116,6 @@ onBeforeUnmount(() => { if (resizeObs) resizeObs.disconnect() })
 
 watch(() => props.modelValue?.length, () => nextTick(measureTableWidth))
 
-// ── Table editing logic ──
 function updateCell(ri, ci, val) {
   const newRows = props.modelValue.map((row, r) =>
     r === ri ? row.map((c, cc) => cc === ci ? val : c) : [...row]
@@ -136,6 +137,27 @@ function colStyle(i) {
   if (wideAt.includes(i)) return 'min-width:180px;'
   return 'min-width:100px;'
 }
+
+function focusNext(ri, ci) {
+  const totalCols = props.headers.length
+  let nextRow = ri
+  let nextCol = ci + 1
+
+  if (nextCol >= totalCols) {
+    nextCol = 0
+    nextRow = ri + 1
+  }
+
+  nextTick(() => {
+    const input = tableEl.value?.querySelector(
+      `input[data-row="${nextRow}"][data-col="${nextCol}"]`
+    )
+    if (input) {
+      input.focus()
+      input.select()
+    }
+  })
+}
 </script>
 
 <style scoped>
@@ -145,7 +167,6 @@ function colStyle(i) {
   width: 100%;
 }
 
-/* ── Real table container — hide native scrollbar (bottom bar handles it) ── */
 .table-container {
   overflow-x: auto;
   overflow-y: visible;
@@ -156,7 +177,6 @@ function colStyle(i) {
 .table-container::-webkit-scrollbar { height: 0; width: 0; }
 .table-container { scrollbar-width: none; }
 
-/* ── Table styles ── */
 .excel-table {
   width: 100%;
   border-collapse: collapse;
@@ -216,14 +236,70 @@ function colStyle(i) {
   user-select: none;
 }
 
-/* ── Print ── */
 @media print {
-  .table-container { overflow: visible; border: none; }
-  .excel-table td, .excel-table th { white-space: normal; }
+  .excel-wrapper,
+  .table-container {
+    overflow: visible !important;
+    border: none !important;
+    width: 100% !important;
+  }
+
+  .excel-table {
+    width: 100% !important;
+    min-width: unset !important;
+    table-layout: auto !important;
+    border-collapse: collapse !important;
+    font-size: 7pt !important;
+  }
+
+  .excel-table thead {
+    display: table-header-group !important;
+  }
+
+  .excel-table th {
+    background: #3b8132 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color: white !important;
+    font-size: 7pt !important;
+    padding: 3px 4px !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+    position: static !important;
+    border: 0.5pt solid #2d6127 !important;
+    text-align: center !important;
+  }
+
+  .excel-table td {
+    font-size: 7pt !important;
+    padding: 2px 4px !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+    overflow: visible !important;
+    text-overflow: unset !important;
+    max-width: none !important;
+    border: 0.5pt solid #ccc !important;
+  }
+
+  .excel-table tr:nth-child(even) td {
+    background: #f0f7ee !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .excel-table tbody tr {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .row-num {
+    width: 20pt !important;
+    font-size: 6.5pt !important;
+    text-align: center !important;
+  }
 }
 </style>
 
-<!-- Global style for the teleported fixed scrollbar (scoped won't reach body) -->
 <style>
 .fixed-bottom-scrollbar {
   position: fixed;
@@ -239,9 +315,7 @@ function colStyle(i) {
 }
 
 .fixed-bottom-scrollbar::-webkit-scrollbar        { height: 20px; }
-.fixed-bottom-scrollbar::-webkit-scrollbar-track  {
-  background: #d1d5db;
-}
+.fixed-bottom-scrollbar::-webkit-scrollbar-track  { background: #d1d5db; }
 .fixed-bottom-scrollbar::-webkit-scrollbar-thumb  {
   background: #72bf6a;
   border-radius: 6px;
@@ -252,6 +326,6 @@ function colStyle(i) {
 .fixed-bottom-scrollbar::-webkit-scrollbar-thumb:active { background: #1a4a15; }
 
 @media print {
-  .fixed-bottom-scrollbar { display: none; }
+  .fixed-bottom-scrollbar { display: none !important; }
 }
 </style>
