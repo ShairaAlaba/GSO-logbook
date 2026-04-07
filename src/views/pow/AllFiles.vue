@@ -378,31 +378,47 @@ function printRecord(id) {
 
 /* ════════════════════════════════════════
    PRINT STYLES
+   Portrait long bond — 4 entries/page
 ════════════════════════════════════════ */
 @media print {
-  /* Page: long bond portrait */
+
+  /* ①  Page size: portrait long bond */
   @page {
-    size: legal portrait;
-    margin: 12mm 14mm 16mm 14mm;
+    size: 8.5in 13in;
+    margin: 8mm 10mm 10mm 10mm;
   }
 
-  /* Hide screen elements */
+  /* ②  Hide all screen-only elements */
   .no-print,
   .page-header,
   .page-content,
   .sidebar,
-  .main-content > *:not(.pow-print-doc),
-  .app-layout > aside {
+  .record-card,
+  .filter-bar,
+  .modal-backdrop,
+  .app-layout > aside,
+  .main-content > *:not(.pow-print-doc) {
     display: none !important;
   }
 
-  /* Show print docs */
+  /* Layout wrappers must be block so print-docs flow */
+  .app-layout,
+  .main-content {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* ③  Show print documents */
   .pow-print-doc {
     display: block !important;
     page-break-before: always;
     break-before: page;
-    font-family: 'Arial', sans-serif;
-    font-size: 9pt;
+    font-family: Arial, sans-serif;
+    font-size: 7pt;
     color: #000;
     background: #fff;
     width: 100%;
@@ -418,27 +434,12 @@ function printRecord(id) {
     display: flex !important;
     align-items: center;
     justify-content: space-between;
-    padding-bottom: 8pt;
-    border-bottom: 2pt solid #2d6127;
-    margin-bottom: 6pt;
+    padding-bottom: 3pt;
+    border-bottom: 1.5pt solid #2d6127;
+    margin-bottom: 3pt;
   }
 
-  .pow-logo {
-    height: 60pt;
-    width: auto;
-    object-fit: contain;
-  }
-
-  .pow-lh-center {
-    flex: 1;
-    text-align: center;
-    padding: 0 10pt;
-  }
-
-  .pow-lh-republic  { font-size: 8pt; color: #444; }
-  .pow-lh-university { font-size: 13pt; font-weight: 700; color: #1a3d18; text-transform: uppercase; }
-  .pow-lh-office    { font-size: 10pt; font-weight: 600; color: #2d6127; }
-  .pow-lh-address   { font-size: 8pt; color: #555; }
+  .pow-logo { height: 36pt; width: auto; object-fit: contain; }
 
   /* ── Document title bar ── */
   .pow-doc-title-bar {
@@ -446,179 +447,145 @@ function printRecord(id) {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
     color: #fff !important;
-    font-size: 11pt;
+    font-size: 8pt;
     font-weight: 700;
     text-align: center;
-    padding: 5pt 8pt;
-    letter-spacing: 1px;
+    padding: 2pt 6pt;
     text-transform: uppercase;
-    margin-bottom: 8pt;
+    margin-bottom: 3pt;
   }
 
   /* ── Record summary table ── */
   .pow-summary-table {
     width: 100%;
     border-collapse: collapse;
-    margin-bottom: 10pt;
-    font-size: 9pt;
+    margin-bottom: 4pt;
+    font-size: 6.5pt;
   }
 
-  .pow-summary-table td {
-    border: 0.5pt solid #999;
-    padding: 3pt 6pt;
-  }
+  .pow-summary-table td { border: 0.4pt solid #aaa; padding: 1.5pt 4pt; }
 
   .pst-label {
     background: #e8f5e9 !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
     font-weight: 600;
-    width: 22%;
+    width: 18%;
     color: #1a3d18;
   }
 
-  .pst-value {
-    width: 28%;
-  }
+  .pst-value { width: 32%; }
 
-  /* ── Entry card ── */
+  /* ════════════════════════════════════
+     ENTRY CARD — 4 per portrait page
+  ════════════════════════════════════ */
   .pow-entry {
-    border: 1pt solid #2d6127;
-    border-radius: 3pt;
-    margin-bottom: 10pt;
+    border: 0.5pt solid #2d6127;
+    margin-bottom: 4pt;
     page-break-inside: avoid;
     break-inside: avoid;
   }
 
-  /* Entry title bar */
   .pow-entry-titlebar {
-    display: flex;
+    display: flex !important;
     align-items: center;
-    gap: 12pt;
+    gap: 8pt;
     background: #3b8132 !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
     color: #fff !important;
-    padding: 4pt 8pt;
-    font-size: 9pt;
+    padding: 2pt 5pt;
+    font-size: 7pt;
     font-weight: 700;
   }
 
-  .pow-entry-num  { font-size: 8pt; opacity: 0.85; }
-  .pow-entry-tab  { font-size: 9pt; }
-  .pow-entry-powno { font-size: 9pt; margin-left: auto; }
+  .pow-entry-num  { font-size: 6.5pt; opacity: 0.85; }
+  .pow-entry-tab  { font-size: 7pt; }
+  .pow-entry-powno { font-size: 7pt; margin-left: auto; }
 
-  /* Full-width rows (title, specifics) */
   .pow-entry-fullrow {
-    display: flex;
-    border-bottom: 0.5pt solid #ccc;
-    font-size: 9pt;
+    display: flex !important;
+    border-bottom: 0.4pt solid #ccc;
   }
 
   .pow-fl {
-    width: 22%;
-    min-width: 22%;
-    padding: 3pt 6pt;
+    width: 18%;
+    min-width: 18%;
+    padding: 1.5pt 4pt;
     font-weight: 600;
+    font-size: 6pt;
     color: #1a3d18;
     background: #f0f7ee !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
-    border-right: 0.5pt solid #ccc;
-    font-size: 8pt;
+    border-right: 0.4pt solid #ccc;
   }
 
   .pow-fv {
     flex: 1;
-    padding: 3pt 6pt;
-    font-size: 9pt;
+    padding: 1.5pt 4pt;
+    font-size: 6.5pt;
     word-break: break-word;
   }
 
-  /* Two-column detail grid */
   .pow-entry-grid {
-    display: flex;
-    border-bottom: 0.5pt solid #ccc;
+    display: flex !important;
+    border-bottom: 0.4pt solid #ccc;
   }
 
-  .pow-col {
-    flex: 1;
-    border-right: 0.5pt solid #ccc;
-  }
-
+  .pow-col { flex: 1; border-right: 0.4pt solid #ccc; }
   .pow-col:last-child { border-right: none; }
 
   .pow-field {
-    display: flex;
-    border-bottom: 0.5pt solid #eee;
-    font-size: 8.5pt;
+    display: flex !important;
+    border-bottom: 0.4pt solid #eee;
   }
 
   .pow-field:last-child { border-bottom: none; }
 
-  /* Cost breakdown bar */
+  .pow-entry-grid .pow-fl { width: 46%; min-width: 46%; font-size: 5.5pt; }
+  .pow-entry-grid .pow-fv { font-size: 6pt; }
+
   .pow-cost-bar {
-    display: flex;
-    flex-wrap: wrap;
-    background: #f9fafb !important;
+    display: flex !important;
+    background: #f0f7ee !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
-    padding: 4pt 6pt;
-    gap: 0;
+    padding: 1.5pt 3pt;
   }
 
   .pow-cost-item {
     flex: 1;
-    min-width: 18%;
-    padding: 2pt 5pt;
+    padding: 1pt 3pt;
     text-align: center;
-    border-right: 0.5pt solid #ddd;
-    font-size: 8pt;
+    border-right: 0.4pt solid #ccc;
   }
 
   .pow-cost-item:last-child { border-right: none; }
 
   .pow-cost-total {
     font-weight: 700;
-    background: #e8f5e9 !important;
+    background: #d4edda !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
-  .pow-cost-label {
-    display: block;
-    font-size: 7pt;
-    color: #555;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-    margin-bottom: 1pt;
-  }
-
-  .pow-cost-value {
-    display: block;
-    font-size: 9pt;
-    font-weight: 600;
-    color: #1a3d18;
-  }
+  .pow-cost-label { display: block; font-size: 5pt; color: #555; text-transform: uppercase; }
+  .pow-cost-value { display: block; font-size: 6.5pt; font-weight: 600; color: #1a3d18; }
 
   /* ── Signature block ── */
   .pow-sig-block {
     display: flex !important;
     justify-content: space-around;
-    margin-top: 20pt;
-    padding-top: 8pt;
+    margin-top: 10pt;
+    padding-top: 4pt;
     page-break-inside: avoid;
     break-inside: avoid;
   }
 
   .pow-sig-item { text-align: center; width: 38%; }
-
-  .pow-sig-line {
-    border-top: 1pt solid #000;
-    margin-bottom: 4pt;
-  }
-
-  .pow-sig-name { font-size: 10pt; font-weight: 700; }
-  .pow-sig-role { font-size: 8pt; color: #555; }
+  .pow-sig-line { border-top: 0.75pt solid #000; margin-bottom: 2pt; }
+  .pow-sig-name { font-size: 7.5pt; font-weight: 700; }
+  .pow-sig-role { font-size: 6.5pt; color: #555; }
 }
 </style>
