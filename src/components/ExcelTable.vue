@@ -1,16 +1,55 @@
 <template>
   <div class="excel-wrapper">
 
-    <!-- ── Table container (native scrollbar hidden) ── -->
     <div class="table-container" ref="tableContainer" @scroll="onTableScroll">
       <table class="excel-table" ref="tableEl">
         <thead>
-          <tr>
-            <th class="row-num">#</th>
-            <th v-for="(h, i) in headers" :key="i" :style="colStyle(i)">{{ h }}</th>
-            <th v-if="editable" style="width:50px;" class="no-print">Actions</th>
-          </tr>
+          <!-- ── Grouped header: two rows ── -->
+          <template v-if="groups && groups.length">
+            <!-- Row 1: group labels -->
+            <tr>
+              <th class="row-num" rowspan="2">#</th>
+              <template v-for="g in groups" :key="g.label">
+                <!-- Normal single column group -->
+                <th
+                  v-if="!g.children"
+                  rowspan="2"
+                  :style="colStyleByName(g.label)"
+                >{{ g.label }}</th>
+                <!-- Grouped parent spanning children -->
+                <th
+                  v-else
+                  :colspan="g.children.length"
+                  class="group-parent-th"
+                >{{ g.label }}</th>
+              </template>
+              <th v-if="editable" rowspan="2" style="width:50px;" class="no-print">Actions</th>
+            </tr>
+            <!-- Row 2: child sub-headers -->
+            <tr>
+              <template v-for="g in groups" :key="'sub-' + g.label">
+                <template v-if="g.children">
+                  <th
+                    v-for="child in g.children"
+                    :key="child"
+                    class="group-child-th"
+                    :style="colStyleByName(child)"
+                  >{{ child }}</th>
+                </template>
+              </template>
+            </tr>
+          </template>
+
+          <!-- ── Flat header: single row (default) ── -->
+          <template v-else>
+            <tr>
+              <th class="row-num">#</th>
+              <th v-for="(h, i) in headers" :key="i" :style="colStyle(i)">{{ h }}</th>
+              <th v-if="editable" style="width:50px;" class="no-print">Actions</th>
+            </tr>
+          </template>
         </thead>
+
         <tbody>
           <tr v-for="(row, ri) in modelValue" :key="ri">
             <td class="row-num">{{ ri + 1 }}</td>
@@ -46,7 +85,6 @@
     <button class="btn btn-outline btn-sm" @click="addRow">+ Add Row</button>
   </div>
 
-  <!-- ── Fixed bottom scrollbar — always visible on screen ── -->
   <Teleport to="body">
     <div
       v-if="isScrollable"
@@ -63,9 +101,12 @@
 import { ref, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
 
 const props = defineProps({
-  headers: { type: Array, required: true },
-  modelValue: { type: Array, default: () => [] },
-  editable: { type: Boolean, default: false }
+  headers:    { type: Array,  required: true },
+  modelValue: { type: Array,  default: () => [] },
+  editable:   { type: Boolean, default: false },
+  // groups: array of { label, children? }
+  // e.g. [{ label: 'TRIP TICKET NO.' }, { label: 'COST CENTER', children: ['PER DIEM', 'FUEL'] }]
+  groups:     { type: Array,  default: null }
 })
 
 const emit = defineEmits(['update:modelValue'])
@@ -113,7 +154,6 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => { if (resizeObs) resizeObs.disconnect() })
-
 watch(() => props.modelValue?.length, () => nextTick(measureTableWidth))
 
 function updateCell(ri, ci, val) {
@@ -138,24 +178,20 @@ function colStyle(i) {
   return 'min-width:100px;'
 }
 
+function colStyleByName(name) {
+  const wide = ['DESTINATION', 'PURPOSE', "REQUESTER'S CONTACT NO.", 'Specifics', 'POW Title']
+  if (wide.includes(name)) return 'min-width:180px;'
+  return 'min-width:100px;'
+}
+
 function focusNext(ri, ci) {
   const totalCols = props.headers.length
   let nextRow = ri
   let nextCol = ci + 1
-
-  if (nextCol >= totalCols) {
-    nextCol = 0
-    nextRow = ri + 1
-  }
-
+  if (nextCol >= totalCols) { nextCol = 0; nextRow = ri + 1 }
   nextTick(() => {
-    const input = tableEl.value?.querySelector(
-      `input[data-row="${nextRow}"][data-col="${nextCol}"]`
-    )
-    if (input) {
-      input.focus()
-      input.select()
-    }
+    const input = tableEl.value?.querySelector(`input[data-row="${nextRow}"][data-col="${nextCol}"]`)
+    if (input) { input.focus(); input.select() }
   })
 }
 </script>
@@ -188,12 +224,26 @@ function focusNext(ri, ci) {
   background: var(--green-500, #3b8132);
   color: white;
   padding: 8px 10px;
-  text-align: left;
+  text-align: center;
   font-weight: 600;
   white-space: nowrap;
   position: sticky;
   top: 0;
   z-index: 10;
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+/* Group parent — slightly lighter so children stand out */
+.group-parent-th {
+  background: #2d6127 !important;
+  border-bottom: 2px solid #fff !important;
+  letter-spacing: 0.5px;
+}
+
+/* Child sub-headers — slightly lighter green */
+.group-child-th {
+  background: #4a9e40 !important;
+  font-size: 11px !important;
 }
 
 .excel-table th:first-child { width: 40px; text-align: center; }
@@ -237,13 +287,11 @@ function focusNext(ri, ci) {
 }
 
 @media print {
-  .excel-wrapper,
-  .table-container {
+  .excel-wrapper, .table-container {
     overflow: visible !important;
     border: none !important;
     width: 100% !important;
   }
-
   .excel-table {
     width: 100% !important;
     min-width: unset !important;
@@ -251,11 +299,7 @@ function focusNext(ri, ci) {
     border-collapse: collapse !important;
     font-size: 7pt !important;
   }
-
-  .excel-table thead {
-    display: table-header-group !important;
-  }
-
+  .excel-table thead { display: table-header-group !important; }
   .excel-table th {
     background: #3b8132 !important;
     -webkit-print-color-adjust: exact !important;
@@ -269,7 +313,16 @@ function focusNext(ri, ci) {
     border: 0.5pt solid #2d6127 !important;
     text-align: center !important;
   }
-
+  .group-parent-th {
+    background: #2d6127 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  .group-child-th {
+    background: #4a9e40 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
   .excel-table td {
     font-size: 7pt !important;
     padding: 2px 4px !important;
@@ -280,52 +333,29 @@ function focusNext(ri, ci) {
     max-width: none !important;
     border: 0.5pt solid #ccc !important;
   }
-
   .excel-table tr:nth-child(even) td {
     background: #f0f7ee !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
-
-  .excel-table tbody tr {
-    page-break-inside: avoid !important;
-    break-inside: avoid !important;
-  }
-
-  .row-num {
-    width: 20pt !important;
-    font-size: 6.5pt !important;
-    text-align: center !important;
-  }
+  .excel-table tbody tr { page-break-inside: avoid !important; break-inside: avoid !important; }
+  .row-num { width: 20pt !important; font-size: 6.5pt !important; text-align: center !important; }
 }
 </style>
 
 <style>
 .fixed-bottom-scrollbar {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 20px;
-  overflow-x: auto;
-  overflow-y: hidden;
-  background: #d1d5db;
-  z-index: 9999;
-  scrollbar-gutter: stable;
+  position: fixed; bottom: 0; left: 0; right: 0;
+  height: 20px; overflow-x: auto; overflow-y: hidden;
+  background: #d1d5db; z-index: 9999; scrollbar-gutter: stable;
 }
-
 .fixed-bottom-scrollbar::-webkit-scrollbar        { height: 20px; }
 .fixed-bottom-scrollbar::-webkit-scrollbar-track  { background: #d1d5db; }
 .fixed-bottom-scrollbar::-webkit-scrollbar-thumb  {
-  background: #72bf6a;
-  border-radius: 6px;
-  border: 4px solid #d1d5db;
-  min-width: 60px;
+  background: #72bf6a; border-radius: 6px;
+  border: 4px solid #d1d5db; min-width: 60px;
 }
 .fixed-bottom-scrollbar::-webkit-scrollbar-thumb:hover  { background: #3b8132; }
 .fixed-bottom-scrollbar::-webkit-scrollbar-thumb:active { background: #1a4a15; }
-
-@media print {
-  .fixed-bottom-scrollbar { display: none !important; }
-}
+@media print { .fixed-bottom-scrollbar { display: none !important; } }
 </style>

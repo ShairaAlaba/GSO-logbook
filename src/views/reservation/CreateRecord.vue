@@ -48,30 +48,28 @@
         </div>
       </div>
 
-      <!-- Excel Table -->
       <div class="card">
         <div class="card-header">
-          <div class="card-title"> Reservation Entries</div>
-          <div style="font-size:12px;color:#6b7280;">Click cells to edit. Press Tab to move between cells.</div>
+          <div class="card-title">Reservation Entries</div>
+          <div style="font-size:12px;color:#6b7280;">Click cells to edit. Press Enter to move to next column.</div>
         </div>
         <div class="card-body" style="padding:12px;">
           <ExcelTable
             :headers="headers"
+            :groups="groups"
             v-model="form.rows"
             :editable="true"
           />
         </div>
       </div>
 
-      <!-- Actions -->
       <div class="no-print" style="display:flex;gap:12px;margin-top:16px;">
-        <button class="btn btn-primary btn-lg" @click="saveRecord"> Save Record</button>
+        <button class="btn btn-primary btn-lg" @click="saveRecord">Save Record</button>
         <button class="btn btn-secondary btn-lg" @click="$router.push('/reservation/all')">Cancel</button>
       </div>
 
-      <!-- Success Message -->
       <div v-if="saved" style="margin-top:16px;padding:12px 16px;background:#d1fae5;border-radius:6px;color:#065f46;font-weight:500;">
-         Record saved successfully! <router-link to="/reservation/all" style="color:#047857;">View All Records →</router-link>
+        Record saved successfully! <router-link to="/reservation/all" style="color:#047857;">View All Records →</router-link>
       </div>
     </div>
   </div>
@@ -81,19 +79,35 @@
 import { ref, reactive } from 'vue'
 import { useLogbookStore } from '../../store/logbook.js'
 import ExcelTable from '../../components/ExcelTable.vue'
-import { useRouter } from 'vue-router'
 
 const store = useLogbookStore()
-const router = useRouter()
 const saved = ref(false)
 
-const vehicleList = ['ADVENTURE', 'COASTER', 'FORTUNER', 'VAN', 'HILUX', 'LIGHT TRUCK', 'PAJERO', 'LITE ACE', 'FORTUNER LTD']
+const vehicleList = ['ADVENTURE','COASTER','FORTUNER','VAN','HILUX','LIGHT TRUCK','PAJERO','LITE ACE','FORTUNER LTD']
 const months = ['January','February','March','April','May','June','July','August','September','October','November','December']
 
+// 14 flat headers — CHARGING OF FUEL/PER DIEM replaced by PER DIEM + FUEL
 const headers = [
   'TRIP TICKET NO.', 'ASSIGNED DRIVER', 'MONTH & DATE/S', 'TIME',
   'DESTINATION', 'PURPOSE', "REQUESTER'S CONTACT NO.", 'REQUESTING OFFICE',
-  'REMARKS', 'CHARGING OF FUEL/PER DIEM', 'STATUS', 'RECORDED BY', 'UPDATED BY'
+  'REMARKS', 'PER DIEM', 'FUEL', 'STATUS', 'RECORDED BY', 'UPDATED BY'
+]
+
+// Grouped header config — tells ExcelTable to show COST CENTER spanning PER DIEM + FUEL
+const groups = [
+  { label: 'TRIP TICKET NO.' },
+  { label: 'ASSIGNED DRIVER' },
+  { label: 'MONTH & DATE/S' },
+  { label: 'TIME' },
+  { label: 'DESTINATION' },
+  { label: 'PURPOSE' },
+  { label: "REQUESTER'S CONTACT NO." },
+  { label: 'REQUESTING OFFICE' },
+  { label: 'REMARKS' },
+  { label: 'COST CENTER', children: ['PER DIEM', 'FUEL'] },
+  { label: 'STATUS' },
+  { label: 'RECORDED BY' },
+  { label: 'UPDATED BY' },
 ]
 
 const form = reactive({
@@ -111,7 +125,7 @@ function saveRecord() {
     alert('Please fill in all required fields (Title, Vehicle, Recorded By)')
     return
   }
-  const record = {
+  store.addReservationRecord({
     id: `RES-${Date.now()}`,
     title: form.title,
     vehicle: form.vehicle,
@@ -120,16 +134,12 @@ function saveRecord() {
     date: form.date,
     recordedBy: form.recordedBy,
     createdAt: new Date().toISOString().split('T')[0],
-    headers: headers,
+    headers: [...headers],
+    groups: [...groups],
     rows: form.rows
-  }
-  store.addReservationRecord(record)
+  })
   saved.value = true
-  // Reset form
-  form.title = ''
-  form.vehicle = ''
-  form.recordedBy = ''
-  form.rows = []
+  form.title = ''; form.vehicle = ''; form.recordedBy = ''; form.rows = []
   setTimeout(() => { saved.value = false }, 5000)
 }
 </script>

@@ -49,6 +49,7 @@
         <div class="record-card-body" :class="{ open: openRecords[rec.id] }">
           <ExcelTable
             :headers="rec.headers"
+            :groups="rec.groups || defaultGroups"
             :model-value="editingId[rec.id] ? draftRows[rec.id] : rec.rows"
             :editable="!!editingId[rec.id]"
             @update:model-value="val => draftRows[rec.id] = val"
@@ -57,15 +58,17 @@
       </div>
     </div>
 
-    <!-- ══ PRINT VIEW — one doc per record ══ -->
+    <!-- ══ PRINT VIEW ══ -->
     <div v-for="rec in filteredRecords" :key="'p-' + rec.id" class="pow-print-doc">
 
       <!-- Letterhead -->
       <div class="pow-letterhead">
         <img src="/1.png" alt="CSU Logo" class="pow-logo" />
         <div class="pow-lh-center">
+          <div class="pow-lh-republic">Republic of the Philippines</div>
           <div class="pow-lh-university">CARAGA STATE UNIVERSITY</div>
           <div class="pow-lh-office">General Services Office</div>
+          <div class="pow-lh-address">Ampayon, Butuan City 8600, Caraga</div>
         </div>
         <img src="/2.png" alt="Bagong Pilipinas" class="pow-logo" />
       </div>
@@ -92,10 +95,8 @@
         </tr>
       </table>
 
-      <!-- ── SUMMARY SECTION ── -->
+      <!-- Summary stats -->
       <div class="sum-section-title">RECORD SUMMARY</div>
-
-      <!-- Stat pills -->
       <div class="sum-stat-bar">
         <div class="sum-stat">
           <div class="sum-stat-num">{{ nonEmptyRows(rec).length }}</div>
@@ -123,7 +124,7 @@
         </div>
       </div>
 
-      <!-- Driver breakdown -->
+      <!-- Driver + Office breakdown -->
       <div class="sum-two-col">
         <div>
           <div class="sum-col-title">Trips by Driver</div>
@@ -156,9 +157,7 @@
       <div class="sum-col-title" style="margin-top:5pt;">Monthly Trip Count</div>
       <table class="sum-breakdown-table" style="width:100%">
         <thead>
-          <tr>
-            <th v-for="m in monthNames" :key="m">{{ m }}</th>
-          </tr>
+          <tr><th v-for="m in monthNames" :key="m">{{ m }}</th></tr>
         </thead>
         <tbody>
           <tr>
@@ -171,11 +170,24 @@
 
       <div class="sum-section-title" style="margin-top:6pt;">COMPLETE TRIP RECORDS</div>
 
-      <!-- Full data table -->
+      <!-- Full data table with grouped COST CENTER header -->
       <table class="sum-data-table">
         <thead>
+          <!-- Row 1: grouped headers -->
           <tr>
-            <th v-for="(h, hi) in rec.headers" :key="hi">{{ h }}</th>
+            <th v-for="(g, gi) in (rec.groups || defaultGroups)" :key="gi"
+              :colspan="g.children ? g.children.length : 1"
+              :rowspan="g.children ? 1 : 2"
+              :class="g.children ? 'cost-center-th' : ''"
+            >{{ g.label }}</th>
+          </tr>
+          <!-- Row 2: sub-headers for groups that have children -->
+          <tr>
+            <template v-for="g in (rec.groups || defaultGroups)" :key="'s'+g.label">
+              <th v-for="child in (g.children || [])" :key="child" class="cost-child-th">
+                {{ child }}
+              </th>
+            </template>
           </tr>
         </thead>
         <tbody>
@@ -198,7 +210,7 @@
           <div class="pow-sig-role">Approved By</div>
         </div>
       </div>
-    </div>
+    </div><!-- /pow-print-doc -->
 
     <!-- Delete modal -->
     <Teleport to="body">
@@ -235,8 +247,26 @@ const draftRows   = reactive({})
 const deleteTarget = ref(null)
 
 const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+const today = new Date().toLocaleDateString('en-PH', { year:'numeric', month:'long', day:'numeric' })
 
-const today = new Date().toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' })
+// Default groups config — used for seeded records that don't have groups stored yet
+// Seeded records have 13 cols (CHARGING OF FUEL/PER DIEM as single col at index 9)
+// New records have 14 cols (PER DIEM at 9, FUEL at 10)
+const defaultGroups = [
+  { label: 'TRIP TICKET NO.' },
+  { label: 'ASSIGNED DRIVER' },
+  { label: 'MONTH & DATE/S' },
+  { label: 'TIME' },
+  { label: 'DESTINATION' },
+  { label: 'PURPOSE' },
+  { label: "REQUESTER'S CONTACT NO." },
+  { label: 'REQUESTING OFFICE' },
+  { label: 'REMARKS' },
+  { label: 'COST CENTER', children: ['PER DIEM', 'FUEL'] },
+  { label: 'STATUS' },
+  { label: 'RECORDED BY' },
+  { label: 'UPDATED BY' },
+]
 
 const years = computed(() => [...new Set(store.reservationRecords.map(r => r.year))].sort())
 
@@ -255,23 +285,31 @@ function nonEmptyRows(rec) {
   return rec.rows.filter(row => row.some(cell => String(cell).trim() !== ''))
 }
 
-// STATUS: col 10
-function countStatus(rec, status) {
-  return nonEmptyRows(rec).filter(row => String(row[10] || '').toLowerCase().includes(status.toLowerCase())).length
+// STATUS col: new records have 14 cols (STATUS at 11), old seeded have 13 (STATUS at 10)
+function statusCol(rec) {
+  return rec.headers && rec.headers.length >= 14 ? 11 : 10
 }
 
-// DRIVER: col 1, STATUS: col 10
+function countStatus(rec, status) {
+  const col = statusCol(rec)
+  return nonEmptyRows(rec).filter(row =>
+    String(row[col] || '').toLowerCase().includes(status.toLowerCase())
+  ).length
+}
+
+// DRIVER: col 1
 function uniqueDrivers(rec) {
   return [...new Set(nonEmptyRows(rec).map(r => r[1]).filter(Boolean))]
 }
 
 function driverBreakdown(rec) {
+  const col = statusCol(rec)
   const map = {}
   nonEmptyRows(rec).forEach(row => {
     const d = row[1] || ''
     if (!map[d]) map[d] = { name: d, total: 0, completed: 0 }
     map[d].total++
-    if (String(row[10] || '').toLowerCase().includes('completed')) map[d].completed++
+    if (String(row[col] || '').toLowerCase().includes('completed')) map[d].completed++
   })
   return Object.values(map).sort((a, b) => b.total - a.total)
 }
@@ -302,26 +340,31 @@ function monthCount(rec, abbr) {
 }
 
 function toggleRecord(id) { openRecords[id] = !openRecords[id] }
+
 function startEdit(rec) {
   draftRows[rec.id] = rec.rows.map(r => [...r])
   editingId[rec.id] = true
   openRecords[rec.id] = true
 }
+
 function saveEdit(rec) {
   const idx = store.reservationRecords.findIndex(r => r.id === rec.id)
   if (idx !== -1) store.updateReservationRecord(idx, { ...store.reservationRecords[idx], rows: draftRows[rec.id] })
   editingId[rec.id] = false
 }
+
 function cancelEdit(rec) {
   delete draftRows[rec.id]
   editingId[rec.id] = false
 }
+
 function confirmDelete(rec) { deleteTarget.value = rec }
 function doDelete() {
   const idx = store.reservationRecords.findIndex(r => r.id === deleteTarget.value.id)
   if (idx !== -1) store.deleteReservationRecord(idx)
   deleteTarget.value = null
 }
+
 function printRecord(id) {
   openRecords[id] = true
   setTimeout(() => window.print(), 300)
@@ -345,24 +388,24 @@ function printRecord(id) {
 
 /* ════ PRINT ════ */
 @media print {
-  @page { size: 8.5in 13in; margin: 8mm 10mm 10mm 10mm; }
+  @page { size: 8.5in 13in landscape; margin: 8mm 10mm 10mm 10mm; }
 
   .no-print, .page-header, .page-content, .sidebar,
   .main-content > *:not(.pow-print-doc), .app-layout > aside,
   .record-card, .filter-bar, .modal-backdrop {
     display: none !important;
   }
-  .app-layout, .main-content { display: block !important; width: 100% !important; height: auto !important; overflow: visible !important; margin: 0 !important; padding: 0 !important; }
+  .app-layout, .main-content {
+    display: block !important; width: 100% !important;
+    height: auto !important; overflow: visible !important;
+    margin: 0 !important; padding: 0 !important;
+  }
 
   .pow-print-doc {
     display: block !important;
-    page-break-before: always;
-    break-before: page;
-    font-family: Arial, sans-serif;
-    font-size: 7pt;
-    color: #000;
-    background: #fff;
-    width: 100%;
+    page-break-before: always; break-before: page;
+    font-family: Arial, sans-serif; font-size: 7pt;
+    color: #000; background: #fff; width: 100%;
   }
   .pow-print-doc:first-of-type { page-break-before: avoid; break-before: avoid; }
 
@@ -370,8 +413,10 @@ function printRecord(id) {
   .pow-letterhead { display: flex !important; align-items: center; justify-content: space-between; padding-bottom: 3pt; border-bottom: 1.5pt solid #2d6127; margin-bottom: 3pt; }
   .pow-logo { height: 36pt; width: auto; object-fit: contain; }
   .pow-lh-center { flex: 1; text-align: center; }
+  .pow-lh-republic { font-size: 7pt; color: #555; }
   .pow-lh-university { font-size: 11pt; font-weight: 700; color: #1a3d18; text-transform: uppercase; }
   .pow-lh-office { font-size: 8pt; color: #2d6127; font-weight: 600; }
+  .pow-lh-address { font-size: 6.5pt; color: #666; }
 
   .pow-doc-title-bar {
     background: #2d6127 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;
@@ -384,7 +429,6 @@ function printRecord(id) {
   .pst-label { background: #e8f5e9 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; font-weight: 600; width: 18%; color: #1a3d18; }
   .pst-value { width: 32%; }
 
-  /* Summary */
   .sum-section-title {
     background: #3b8132 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;
     color: #fff !important; font-size: 7pt; font-weight: 700;
@@ -407,7 +451,25 @@ function printRecord(id) {
 
   /* Full data table */
   .sum-data-table { width: 100%; border-collapse: collapse; font-size: 5.5pt; margin-top: 2pt; }
-  .sum-data-table th { background: #3b8132 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color: #fff !important; font-weight: 600; padding: 2pt 3pt; border: 0.4pt solid #2d6127; text-align: center; white-space: nowrap; }
+  .sum-data-table th {
+    background: #3b8132 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;
+    color: #fff !important; font-weight: 600; padding: 2pt 3pt;
+    border: 0.4pt solid #2d6127; text-align: center; white-space: nowrap;
+  }
+  /* COST CENTER parent header */
+  .cost-center-th {
+    background: #2d6127 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    letter-spacing: 0.5px;
+  }
+  /* PER DIEM / FUEL child headers */
+  .cost-child-th {
+    background: #4a9e40 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    font-size: 5pt !important;
+  }
   .sum-data-table td { padding: 1.5pt 3pt; border: 0.4pt solid #ddd; vertical-align: top; word-break: break-word; }
   .sum-data-table tbody tr:nth-child(even) td { background: #f0f7ee !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
   .sum-data-table tbody tr { page-break-inside: avoid !important; break-inside: avoid !important; }
