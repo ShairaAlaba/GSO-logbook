@@ -76,7 +76,7 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { reactive, ref } from 'vue'
 import { useLogbookStore } from '../../store/logbook.js'
 import ExcelTable from '../../components/ExcelTable.vue'
 
@@ -86,14 +86,12 @@ const saved = ref(false)
 const vehicleList = ['ADVENTURE','COASTER','FORTUNER','VAN','HILUX','LIGHT TRUCK','PAJERO','LITE ACE','FORTUNER LTD']
 const months = ['January','February','March','April','May','June','July','August','September','October','November','December']
 
-// 14 flat headers — CHARGING OF FUEL/PER DIEM replaced by PER DIEM + FUEL
 const headers = [
   'TRIP TICKET NO.', 'ASSIGNED DRIVER', 'MONTH & DATE/S', 'TIME',
   'DESTINATION', 'PURPOSE', "REQUESTER'S CONTACT NO.", 'REQUESTING OFFICE',
   'REMARKS', 'PER DIEM', 'FUEL', 'STATUS', 'RECORDED BY', 'UPDATED BY'
 ]
 
-// Grouped header config — tells ExcelTable to show COST CENTER spanning PER DIEM + FUEL
 const groups = [
   { label: 'TRIP TICKET NO.' },
   { label: 'ASSIGNED DRIVER' },

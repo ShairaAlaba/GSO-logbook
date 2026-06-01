@@ -55,7 +55,7 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useLogbookStore } from '../../store/logbook.js'
 import ExcelTable from '../../components/ExcelTable.vue'
@@ -97,7 +97,6 @@ function saveRecord() {
     headers: [...headers],
     rows: form.rows
   })
-  // Navigate immediately to all records after saving
   router.push('/fuel/all')
 }
 </script>

@@ -61,6 +61,7 @@
                 :data-col="ci"
                 @input="updateCell(ri, ci, $event.target.value)"
                 @keydown.enter.prevent="focusNext(ri, ci)"
+                @keydown="onKeyNav($event, ri, ci)"
                 :placeholder="headers[ci]"
               />
               <span v-else :title="cell">{{ cell }}</span>
@@ -179,16 +180,50 @@ function colStyle(i) {
 }
 
 function colStyleByName(name) {
-  const wide = ['DESTINATION', 'PURPOSE', "REQUESTER'S CONTACT NO.", 'Specifics', 'POW Title']
+  const wide = ['DESTINATION', 'PURPOSE', "REQUESTER'S CONTACT NO.", 'NAME OF REQUESTER', 'REMARKS', 'Specifics', 'POW Title']
   if (wide.includes(name)) return 'min-width:180px;'
   return 'min-width:100px;'
+}
+
+function focusCell(ri, ci) {
+  nextTick(() => {
+    const input = tableEl.value?.querySelector(`input[data-row="${ri}"][data-col="${ci}"]`)
+    if (input) { input.focus(); input.select() }
+  })
+}
+
+function onKeyNav(e, ri, ci) {
+  const totalCols = props.headers.length
+  const totalRows = props.modelValue.length
+
+  if (e.key === 'ArrowRight') {
+    e.preventDefault()
+    if (ci + 1 < totalCols) focusCell(ri, ci + 1)
+  } else if (e.key === 'ArrowLeft') {
+    e.preventDefault()
+    if (ci - 1 >= 0) focusCell(ri, ci - 1)
+  } else if (e.key === 'ArrowDown') {
+    e.preventDefault()
+    if (ri + 1 < totalRows) focusCell(ri + 1, ci)
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault()
+    if (ri - 1 >= 0) focusCell(ri - 1, ci)
+  }
 }
 
 function focusNext(ri, ci) {
   const totalCols = props.headers.length
   let nextRow = ri
   let nextCol = ci + 1
-  if (nextCol >= totalCols) { nextCol = 0; nextRow = ri + 1 }
+  if (nextCol >= totalCols) {
+    nextCol = 0
+    nextRow = ri + 1
+    // Auto-add a new row if we're past the last one
+    if (nextRow >= props.modelValue.length) {
+      const newRow = new Array(props.headers.length).fill('')
+      emit('update:modelValue', [...props.modelValue, newRow])
+    }
+  }
   nextTick(() => {
     const input = tableEl.value?.querySelector(`input[data-row="${nextRow}"][data-col="${nextCol}"]`)
     if (input) { input.focus(); input.select() }
